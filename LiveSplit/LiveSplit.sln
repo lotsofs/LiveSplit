@@ -120,6 +120,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveSplit.Racetime", "Compo
 		{6DE847DB-20A3-4848-AEEE-1B4364AECDFB} = {6DE847DB-20A3-4848-AEEE-1B4364AECDFB}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveSplit.OutputToFile", "Components\Livesplit.OutputToFile\LiveSplit.OutputToFile.csproj", "{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -319,6 +321,12 @@ Global
 		{071DD33F-6D10-4C1C-AA52-C86F02CEB67C}.Release Candidate|Any CPU.Build.0 = Release|Any CPU
 		{071DD33F-6D10-4C1C-AA52-C86F02CEB67C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{071DD33F-6D10-4C1C-AA52-C86F02CEB67C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}.Release Candidate|Any CPU.ActiveCfg = Release Candidate|Any CPU
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}.Release Candidate|Any CPU.Build.0 = Release Candidate|Any CPU
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -356,6 +364,7 @@ Global
 		{CA2C668C-1C3F-4C44-9034-99848AFE47BA} = {91298215-12A5-4194-B848-1D6ABBFC586E}
 		{825B6521-94B8-4C8A-9709-3CA2ABFE70D7} = {91298215-12A5-4194-B848-1D6ABBFC586E}
 		{071DD33F-6D10-4C1C-AA52-C86F02CEB67C} = {91298215-12A5-4194-B848-1D6ABBFC586E}
+		{A532E4B9-1D1E-4ED5-B0A0-DFA650EF0DE5} = {91298215-12A5-4194-B848-1D6ABBFC586E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63FB9C43-D26C-4159-82EE-CECE7D2AA44F}

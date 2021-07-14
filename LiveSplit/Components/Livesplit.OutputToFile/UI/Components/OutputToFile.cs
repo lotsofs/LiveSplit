@@ -1,4 +1,5 @@
 ﻿using LiveSplit.Model;
+using LiveSplit.TimeFormatters;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -36,6 +37,8 @@ namespace LiveSplit.UI.Components
 
         public float MinimumHeight { get; set; }
 
+        protected ShortTimeFormatter Formatter = new ShortTimeFormatter();
+
         public OutputToFile()
         {
             VerticalHeight = 0;
@@ -68,7 +71,11 @@ namespace LiveSplit.UI.Components
             Cache["AttemptHistoryCount"] = state.Run.AttemptHistory.Count;
             Cache["Run"] = state.Run;
             if (Cache.HasChanged) {
-                MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"].ToString());
+                if (state.CurrentPhase == TimerPhase.NotRunning)
+                    MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"].ToString());
+                else
+                    MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"] + 1.ToString());
+
             }
 
             // run & category information
@@ -83,31 +90,85 @@ namespace LiveSplit.UI.Components
             // split (real time)
             Cache.Restart();
             var currentSplit = state.CurrentSplit;
-            if (currentSplit == null) {
+            if (state.CurrentPhase == TimerPhase.NotRunning) {
                 Cache["CurrentSplitName"] = null;
+                Cache["CurrentSplitIndex"] = -1;
                 Cache["CurrentSplitGoldTime"] = null;
                 Cache["CurrentSplitPBTime"] = null;
+                Cache["PreviousSplitSign"] = "Undetermined";
                 if (Cache.HasChanged) {
-                    MakeFile("CurrentSplit_Name.txt", "<none>");
-                    MakeFile("CurrentSplit_RealTime_Gold.txt", "N/A");
-                    MakeFile("CurrentSplit_RealTime_PB.txt", "N/A");
+                    MakeFile("CurrentSplit_Name.txt", "");
+                    MakeFile("CurrentSplit_RealTime_Gold.txt", "");
+                    MakeFile("CurrentSplit_RealTime_PB.txt", "");
+                    MakeFile("CurrentSplit_Index.txt", "-1");
+                    MakeFile("PreviousSplit_Sign.txt", "Undetermined");
+                }
+            }
+            else if (state.CurrentPhase == TimerPhase.Ended) {
+                Cache["CurrentSplitName"] = null;
+                Cache["CurrentSplitIndex"] = state.Run.Count;
+                Cache["CurrentSplitGoldTime"] = null;
+                Cache["CurrentSplitPBTime"] = null;
+
+                TimeSpan? previousSplitTime = state.Run[state.CurrentSplitIndex - 1].SplitTime[TimingMethod.RealTime];
+                TimeSpan? previousSplitPBTime = state.Run[state.CurrentSplitIndex - 1].PersonalBestSplitTime[TimingMethod.RealTime];
+                Cache["PreviousSplitSign"] = previousSplitTime - previousSplitPBTime > TimeSpan.Zero ? "NoPB" : "PB";
+
+                if (Cache.HasChanged) {
+                    MakeFile("CurrentSplit_Name.txt", "");
+                    MakeFile("CurrentSplit_RealTime_Gold.txt", "");
+                    MakeFile("CurrentSplit_RealTime_PB.txt", "");
+                    MakeFile("CurrentSplit_Index.txt", Cache["CurrentSplitIndex"].ToString());
+                    MakeFile("PreviousSplit_Sign.txt", Cache["PreviousSplitSign"].ToString());
                 }
             }
             else {
                 Cache["CurrentSplitName"] = currentSplit.Name;
+                Cache["CurrentSplitIndex"] = state.CurrentSplitIndex;
                 Cache["CurrentSplitGoldTime"] = currentSplit.BestSegmentTime[TimingMethod.RealTime];
-                Cache["CurrentSplitPBTime"] = currentSplit.PersonalBestSplitTime[TimingMethod.RealTime];
-                if (Cache.HasChanged) {
-                    MakeFile("CurrentSplit_Name.txt", Cache["CurrentSplitName"].ToString());
-                    if (Cache["CurrentSplitGoldTime"] == null) 
-                        MakeFile("CurrentSplit_RealTime_Gold.txt", "N/A");
-                    else 
-                        MakeFile("CurrentSplit_RealTime_Gold.txt", Cache["CurrentSplitGoldTime"].ToString());
+                
+                var previousSplit = state.Run[state.CurrentSplitIndex - 1];
 
+                // calculate the PB split as this value tracks the full run time instead of individual split time
+                if (state.CurrentSplitIndex > 0) {
+                    Cache["CurrentSplitPBTime"] = currentSplit.PersonalBestSplitTime[TimingMethod.RealTime] - previousSplit.PersonalBestSplitTime[TimingMethod.RealTime];
+                }
+                else {
+                    Cache["CurrentSplitPBTime"] = currentSplit.PersonalBestSplitTime[TimingMethod.RealTime];
+                }
+
+                // calculate whether the run is ahead or behind
+                TimeSpan? previousSplitTime = previousSplit.SplitTime[TimingMethod.RealTime];
+                TimeSpan? previousSplitPBTime = previousSplit.PersonalBestSplitTime[TimingMethod.RealTime];
+                if (previousSplitTime != null && previousSplitPBTime != null) {
+                    Cache["PreviousSplitSign"] = previousSplitTime - previousSplitPBTime > TimeSpan.Zero ? "Behind" : "Ahead";
+                }
+                else {
+                    Cache["PreviousSplitSign"] = "Undetermined";
+				}
+
+                if (Cache.HasChanged) {
+                    MakeFile("CurrentSplit_Name.txt",  Cache["CurrentSplitName"].ToString());
+                    MakeFile("CurrentSplit_Index.txt", Cache["CurrentSplitIndex"].ToString());
+                    MakeFile("PreviousSplit_Sign.txt", Cache["PreviousSplitSign"].ToString());
+
+                    // write the gold split
+                    if (Cache["CurrentSplitGoldTime"] == null)
+                        MakeFile("CurrentSplit_RealTime_Gold.txt", "-");
+                    else {
+                        var timeString = Formatter.Format((TimeSpan)Cache["CurrentSplitGoldTime"], TimeFormat.Minutes);
+                        int dotIndex = timeString.IndexOf(".");
+                        MakeFile("CurrentSplit_RealTime_Gold.txt", timeString.Substring(0, dotIndex + 3).ToString());
+                    }
+
+                    // write the PB split
                     if (Cache["CurrentSplitPBTime"] == null)
-                        MakeFile("CurrentSplit_RealTime_PB.txt", "N/A");
-                    else
-                        MakeFile("CurrentSplit_RealTime_PB.txt", Cache["CurrentSplitPBTime"].ToString());
+                        MakeFile("CurrentSplit_RealTime_PB.txt", "-");
+                    else {
+                        var timeString = Formatter.Format((TimeSpan)Cache["CurrentSplitPBTime"], TimeFormat.Minutes);
+                        int dotIndex = timeString.IndexOf(".");
+                        MakeFile("CurrentSplit_RealTime_PB.txt", timeString.Substring(0, dotIndex + 3).ToString());
+                    }
                 }
             }
         }

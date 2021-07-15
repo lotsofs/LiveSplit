@@ -68,23 +68,20 @@ namespace LiveSplit.UI.Components
         {
             // attempt history count
             Cache.Restart();
-            Cache["AttemptHistoryCount"] = state.Run.AttemptHistory.Count;
+            Cache["AttemptHistoryCount"] = state.Run.AttemptCount;
             Cache["Run"] = state.Run;
-            if (Cache.HasChanged) {
-                if (state.CurrentPhase == TimerPhase.NotRunning)
-                    MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"].ToString());
-                else
-                    MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"] + 1.ToString());
-
-            }
-
             // run & category information
-            Cache.Restart();
             Cache["GameName"] = state.Run.GameName;
             Cache["CategoryName"] = state.Run.CategoryName;
+            Cache["State"] = state.CurrentPhase;
             if (Cache.HasChanged) {
                 MakeFile("GameName.txt", Cache["GameName"].ToString());
                 MakeFile("CategoryName.txt", Cache["CategoryName"].ToString());
+
+                if (state.CurrentPhase == TimerPhase.NotRunning)
+                    MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"].ToString());
+                else
+                    MakeFile("AttemptCount.txt", state.Run.AttemptCount + 1.ToString());
             }
 
             // split (real time)
@@ -97,9 +94,9 @@ namespace LiveSplit.UI.Components
                 Cache["CurrentSplitPBTime"] = null;
                 Cache["PreviousSplitSign"] = "Undetermined";
                 if (Cache.HasChanged) {
-                    MakeFile("CurrentSplit_Name.txt", "");
-                    MakeFile("CurrentSplit_RealTime_Gold.txt", "");
-                    MakeFile("CurrentSplit_RealTime_PB.txt", "");
+                    MakeFile("CurrentSplit_Name.txt", "-");
+                    MakeFile("CurrentSplit_RealTime_Gold.txt", "-");
+                    MakeFile("CurrentSplit_RealTime_PB.txt", "-");
                     MakeFile("CurrentSplit_Index.txt", "-1");
                     MakeFile("PreviousSplit_Sign.txt", "Undetermined");
                 }
@@ -115,9 +112,9 @@ namespace LiveSplit.UI.Components
                 Cache["PreviousSplitSign"] = previousSplitTime - previousSplitPBTime > TimeSpan.Zero ? "NoPB" : "PB";
 
                 if (Cache.HasChanged) {
-                    MakeFile("CurrentSplit_Name.txt", "");
-                    MakeFile("CurrentSplit_RealTime_Gold.txt", "");
-                    MakeFile("CurrentSplit_RealTime_PB.txt", "");
+                    MakeFile("CurrentSplit_Name.txt", "-");
+                    MakeFile("CurrentSplit_RealTime_Gold.txt", "-");
+                    MakeFile("CurrentSplit_RealTime_PB.txt", "-");
                     MakeFile("CurrentSplit_Index.txt", Cache["CurrentSplitIndex"].ToString());
                     MakeFile("PreviousSplit_Sign.txt", Cache["PreviousSplitSign"].ToString());
                 }
@@ -126,26 +123,27 @@ namespace LiveSplit.UI.Components
                 Cache["CurrentSplitName"] = currentSplit.Name;
                 Cache["CurrentSplitIndex"] = state.CurrentSplitIndex;
                 Cache["CurrentSplitGoldTime"] = currentSplit.BestSegmentTime[TimingMethod.RealTime];
-                
-                var previousSplit = state.Run[state.CurrentSplitIndex - 1];
+
 
                 // calculate the PB split as this value tracks the full run time instead of individual split time
                 if (state.CurrentSplitIndex > 0) {
+                    var previousSplit = state.Run[state.CurrentSplitIndex - 1];
                     Cache["CurrentSplitPBTime"] = currentSplit.PersonalBestSplitTime[TimingMethod.RealTime] - previousSplit.PersonalBestSplitTime[TimingMethod.RealTime];
+                    // calculate whether the run is ahead or behind
+                    TimeSpan? previousSplitTime = previousSplit.SplitTime[TimingMethod.RealTime];
+                    TimeSpan? previousSplitPBTime = previousSplit.PersonalBestSplitTime[TimingMethod.RealTime];
+                    if (previousSplitTime != null && previousSplitPBTime != null) {
+                        Cache["PreviousSplitSign"] = previousSplitTime - previousSplitPBTime > TimeSpan.Zero ? "Behind" : "Ahead";
+                    }
+                    else {
+                        Cache["PreviousSplitSign"] = "Undetermined";
+				    }
                 }
                 else {
                     Cache["CurrentSplitPBTime"] = currentSplit.PersonalBestSplitTime[TimingMethod.RealTime];
+                    Cache["PreviousSplitSign"] = "Undetermined";
                 }
 
-                // calculate whether the run is ahead or behind
-                TimeSpan? previousSplitTime = previousSplit.SplitTime[TimingMethod.RealTime];
-                TimeSpan? previousSplitPBTime = previousSplit.PersonalBestSplitTime[TimingMethod.RealTime];
-                if (previousSplitTime != null && previousSplitPBTime != null) {
-                    Cache["PreviousSplitSign"] = previousSplitTime - previousSplitPBTime > TimeSpan.Zero ? "Behind" : "Ahead";
-                }
-                else {
-                    Cache["PreviousSplitSign"] = "Undetermined";
-				}
 
                 if (Cache.HasChanged) {
                     MakeFile("CurrentSplit_Name.txt",  Cache["CurrentSplitName"].ToString());
@@ -189,7 +187,8 @@ namespace LiveSplit.UI.Components
         }
 
         void MakeFile(string fileName, string items) {
-            string settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "LiveSplitTEST"); 
+            string settingsPath = Settings.FolderPath;
+            if (string.IsNullOrEmpty(settingsPath)) return;
             string path = Path.Combine(settingsPath, fileName);
             File.WriteAllText(path, items);
         }

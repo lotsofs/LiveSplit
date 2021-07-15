@@ -77,11 +77,7 @@ namespace LiveSplit.UI.Components
             if (Cache.HasChanged) {
                 MakeFile("GameName.txt", Cache["GameName"].ToString());
                 MakeFile("CategoryName.txt", Cache["CategoryName"].ToString());
-
-                if (state.CurrentPhase == TimerPhase.NotRunning)
-                    MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"].ToString());
-                else
-                    MakeFile("AttemptCount.txt", state.Run.AttemptCount + 1.ToString());
+                MakeFile("AttemptCount.txt", Cache["AttemptHistoryCount"].ToString());
             }
 
             // split (real time)

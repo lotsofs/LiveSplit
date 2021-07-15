@@ -50,8 +50,9 @@ namespace LiveSplit.UI.Components {
                 dialog.SelectedPath = Path.GetDirectoryName(FolderPath);
             }
 
-            if (dialog.ShowDialog() == DialogResult.OK) ;
-            FolderPath = this.txtFolderPath.Text = dialog.SelectedPath;
+            if (dialog.ShowDialog() == DialogResult.OK) {
+                FolderPath = this.txtFolderPath.Text = dialog.SelectedPath;
+            }
         }
 	}
 }

@@ -61,14 +61,14 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Components\AlignmentType.cs" />
-    <Compile Include="UI\Components\OutputToFile.cs" />
-    <Compile Include="UI\Components\OutputToFileFactory.cs" />
     <Compile Include="UI\Components\OutputToFileSettings.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="UI\Components\OutputToFileSettings.Designer.cs">
       <DependentUpon>OutputToFileSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\Components\OutputToFile.cs" />
+    <Compile Include="UI\Components\OutputToFileFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\LiveSplit.Core\LiveSplit.Core.csproj">

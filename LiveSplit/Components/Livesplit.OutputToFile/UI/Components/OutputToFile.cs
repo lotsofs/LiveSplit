@@ -93,6 +93,7 @@ namespace LiveSplit.UI.Components
                     MakeFile("CurrentSplit_Name.txt", "-");
                     MakeFile("CurrentSplit_RealTime_Gold.txt", "-");
                     MakeFile("CurrentSplit_RealTime_PB.txt", "-");
+                    MakeFile("CurrentSplit_RealTime_FinishedAt.txt", "-");
                     MakeFile("CurrentSplit_Index.txt", "-1");
                     MakeFile("PreviousSplit_Sign.txt", "Undetermined");
                 }
@@ -111,6 +112,7 @@ namespace LiveSplit.UI.Components
                     MakeFile("CurrentSplit_Name.txt", "-");
                     MakeFile("CurrentSplit_RealTime_Gold.txt", "-");
                     MakeFile("CurrentSplit_RealTime_PB.txt", "-");
+                    MakeFile("CurrentSplit_RealTime_FinishedAt.txt", "-");
                     MakeFile("CurrentSplit_Index.txt", Cache["CurrentSplitIndex"].ToString());
                     MakeFile("PreviousSplit_Sign.txt", Cache["PreviousSplitSign"].ToString());
                 }
@@ -156,12 +158,17 @@ namespace LiveSplit.UI.Components
                     }
 
                     // write the PB split
-                    if (Cache["CurrentSplitPBTime"] == null)
+                    if (Cache["CurrentSplitPBTime"] == null) {
                         MakeFile("CurrentSplit_RealTime_PB.txt", "-");
+                        MakeFile("CurrentSplit_RealTime_FinishedAt.txt", "-");
+                    }
                     else {
                         var timeString = Formatter.Format((TimeSpan)Cache["CurrentSplitPBTime"], TimeFormat.Minutes);
                         int dotIndex = timeString.IndexOf(".");
                         MakeFile("CurrentSplit_RealTime_PB.txt", timeString.Substring(0, dotIndex + 3).ToString());
+                        timeString = Formatter.Format(currentSplit.PersonalBestSplitTime[TimingMethod.RealTime], TimeFormat.Minutes);
+                        dotIndex = timeString.IndexOf(".");
+                        MakeFile("CurrentSplit_RealTime_FinishedAt.txt", timeString.Substring(0, dotIndex + 3).ToString());
                     }
                 }
             }
